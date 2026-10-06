@@ -4,14 +4,14 @@ A no-backend static web app for the supplied one-page Gujarati Patrika.
 
 ## Features
 
-- Enter Gujarati member name and generate a PDF.
+- Enter a Gujarati or English member name and generate a PDF.
 - Live PDF preview updates as the name is typed.
 - Generate button saves the member and downloads the PDF; previewing alone does neither.
 - LocalStorage saves generated member names and timestamps.
 - Table shows every saved member with a clickable name that shares its PDF, plus Share / Preview / Download / Link actions; the time and status columns are omitted.
 - "Share" uses the native Web Share API when supported, otherwise copies the share link.
 - "Link" copies a URL containing the member name so the recipient can open the same page with that name.
-- Names use a consistent 16 pt font and wrap into up to two lines; names too long for two lines are rejected with a message rather than shrunk.
+- Names use a 16 pt font and wrap into up to two lines; Gujarati names use the bundled Gujarati font and English names use PDF's built-in Helvetica Bold font. Names too long for two lines are rejected with a message rather than shrunk.
 - Batch-style workflow via saved member table and "બધા Download".
 - Static-only: works on GitHub Pages without a server or runtime CDN requests.
 

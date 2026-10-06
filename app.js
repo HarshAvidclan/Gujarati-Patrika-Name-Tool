@@ -1,4 +1,4 @@
-const { PDFDocument, rgb } = PDFLib;
+const { PDFDocument, StandardFonts, rgb } = PDFLib;
 
 const STORAGE_KEY = "patrika-members-v1";
 const TEMPLATE_URL = "./assets/patrika-template.jpg";
@@ -134,7 +134,10 @@ async function createPdf(name) {
   const bg = await pdfDoc.embedJpg(templateBytes);
   page.drawImage(bg, { x: 0, y: 0, width: PAGE_W, height: PAGE_H });
 
-  const font = await pdfDoc.embedFont(fontBytes, { subset: true });
+  const isEnglishName = /^[\x20-\x7E]+$/.test(name);
+  const font = isEnglishName
+    ? await pdfDoc.embedFont(StandardFonts.HelveticaBold)
+    : await pdfDoc.embedFont(fontBytes, { subset: true });
   const maxWidth = NAME_RIGHT - NAME_LEFT;
   const lines = wrapWords(font, name, maxWidth, NAME_FONT_SIZE);
 

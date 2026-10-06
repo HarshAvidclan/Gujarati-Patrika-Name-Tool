@@ -364,9 +364,6 @@ function renderTable() {
     const date = document.createElement("td");
     date.textContent = formatDate(member.createdAt);
 
-    const status = document.createElement("td");
-    status.innerHTML = `<span class="status-pill">Saved</span>`;
-
     const actions = document.createElement("td");
     actions.className = "row-actions";
 
@@ -393,8 +390,8 @@ function renderTable() {
     linkBtn.textContent = "Link";
     linkBtn.onclick = () => copyLink(member.name);
 
-    actions.append(openBtn, downloadBtn, shareBtn, linkBtn);
-    tr.append(n, name, date, status, actions);
+    actions.append(shareBtn, openBtn, downloadBtn, linkBtn);
+    tr.append(n, name, date, actions);
     membersBody.appendChild(tr);
   });
 }

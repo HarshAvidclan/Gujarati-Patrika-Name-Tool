@@ -1,8 +1,7 @@
-const { PDFDocument, rgb } = PDFLib;
+const { PDFDocument } = PDFLib;
 
 const STORAGE_KEY = "patrika-members-v1";
 const TEMPLATE_URL = "./assets/patrika-template.jpg";
-const FONT_URL = "./assets/NotoSansGujarati-Bold.ttf";
 
 // PDF page is the same 414 x 630 pt size as the original invitation.
 const PAGE_W = 414;
@@ -16,9 +15,6 @@ const NAME_FONT_SIZE = 16;
 const NAME_LINE_GAP = 18;
 const NAME_MAX_LINES = 2;
 const NAME_TOO_LONG_MESSAGE = "નામ બે લાઇનમાં ફિટ થતું નથી. કૃપા કરીને ટૂંકું નામ દાખલ કરો.";
-
-// Color taken from the invitation's dark reddish-purple text.
-const NAME_COLOR = rgb(0.46, 0.08, 0.28);
 
 const nameInput = document.getElementById("nameInput");
 const generateBtn = document.getElementById("generateBtn");
@@ -35,7 +31,6 @@ const downloadAllBtn = document.getElementById("downloadAllBtn");
 
 let members = loadMembers();
 let currentRecord = null;
-let fontBytes = null;
 let templateBytes = null;
 let previewRequestId = 0;
 let previewTimer = null;
@@ -67,12 +62,6 @@ function sanitizeFileName(name) {
 }
 
 async function getAssets() {
-  if (!fontBytes) {
-    fontBytes = await fetch(FONT_URL).then(r => {
-      if (!r.ok) throw new Error("Gujarati font load failed");
-      return r.arrayBuffer();
-    });
-  }
   if (!templateBytes) {
     templateBytes = await fetch(TEMPLATE_URL).then(r => {
       if (!r.ok) throw new Error("Patrika template load failed");
@@ -81,26 +70,26 @@ async function getAssets() {
   }
 }
 
-function wrapWords(font, text, maxWidth, size) {
+function wrapWords(context, text, maxWidth) {
   const words = text.trim().split(/\s+/);
   const lines = [];
   let line = "";
 
   for (const word of words) {
-    if (font.widthOfTextAtSize(word, size) > maxWidth) {
+    if (context.measureText(word).width > maxWidth) {
       if (line) {
         lines.push(line);
         line = "";
       }
 
       const graphemes = typeof Intl.Segmenter === "function"
-        ? Array.from(new Intl.Segmenter("gu", { granularity: "grapheme" }).segment(word), x => x.segment)
+        ? Array.from(new Intl.Segmenter(undefined, { granularity: "grapheme" }).segment(word), x => x.segment)
         : Array.from(word);
       let fragment = "";
 
       for (const grapheme of graphemes) {
         const candidate = fragment + grapheme;
-        if (fragment && font.widthOfTextAtSize(candidate, size) > maxWidth) {
+        if (fragment && context.measureText(candidate).width > maxWidth) {
           lines.push(fragment);
           fragment = grapheme;
         } else {
@@ -113,7 +102,7 @@ function wrapWords(font, text, maxWidth, size) {
     }
 
     const test = line ? `${line} ${word}` : word;
-    if (font.widthOfTextAtSize(test, size) <= maxWidth) {
+    if (context.measureText(test).width <= maxWidth) {
       line = test;
     } else {
       if (line) lines.push(line);
@@ -124,35 +113,78 @@ function wrapWords(font, text, maxWidth, size) {
   return lines.length ? lines : [text];
 }
 
-async function createPdf(name) {
-  await getAssets();
+async function renderNameImage(name, maxWidthPt) {
+  await document.fonts.load(`bold ${NAME_FONT_SIZE}pt NotoGujarati`);
 
-  const pdfDoc = await PDFDocument.create();
-  pdfDoc.registerFontkit(fontkit);
-  const page = pdfDoc.addPage([PAGE_W, PAGE_H]);
+  const pointsToPixels = 4 / 3;
+  const imageScale = 3;
+  const maxWidthPx = maxWidthPt * pointsToPixels;
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.ceil(maxWidthPx * imageScale);
+  const context = canvas.getContext("2d");
+  if (!context) throw new Error("Name canvas is unavailable");
 
-  const bg = await pdfDoc.embedJpg(templateBytes);
-  page.drawImage(bg, { x: 0, y: 0, width: PAGE_W, height: PAGE_H });
+  context.scale(imageScale, imageScale);
+  context.font = `bold ${NAME_FONT_SIZE}pt NotoGujarati, sans-serif`;
+  context.direction = /[\u0590-\u08ff\ufb1d-\ufdff\ufe70-\ufeff]/u.test(name) ? "rtl" : "ltr";
 
-  const font = await pdfDoc.embedFont(fontBytes, { subset: true });
-  const maxWidth = NAME_RIGHT - NAME_LEFT;
-  const lines = wrapWords(font, name, maxWidth, NAME_FONT_SIZE);
-
+  const lines = wrapWords(context, name, maxWidthPx);
   if (lines.length > NAME_MAX_LINES) {
     const error = new Error(NAME_TOO_LONG_MESSAGE);
     error.name = "NameTooLongError";
     throw error;
   }
 
+  const metrics = context.measureText("Mg");
+  const ascent = metrics.actualBoundingBoxAscent || NAME_FONT_SIZE * pointsToPixels;
+  const descent = metrics.actualBoundingBoxDescent || NAME_FONT_SIZE * pointsToPixels * 0.3;
+  const lineGapPx = NAME_LINE_GAP * pointsToPixels;
+  const firstBaseline = ascent + 2;
+  const imageHeightPx = Math.ceil(firstBaseline + (lines.length - 1) * lineGapPx + descent + 2);
+  canvas.height = Math.ceil(imageHeightPx * imageScale);
+
+  // Assigning canvas height resets its drawing state.
+  context.scale(imageScale, imageScale);
+  context.font = `bold ${NAME_FONT_SIZE}pt NotoGujarati, sans-serif`;
+  context.direction = /[\u0590-\u08ff\ufb1d-\ufdff\ufe70-\ufeff]/u.test(name) ? "rtl" : "ltr";
+  context.textBaseline = "alphabetic";
+  context.fillStyle = "#751448";
   lines.forEach((line, index) => {
-    const lineWidth = font.widthOfTextAtSize(line, NAME_FONT_SIZE);
-    page.drawText(line, {
-      x: index === 0 ? NAME_LEFT : NAME_LEFT + (maxWidth - lineWidth) / 2,
-      y: NAME_Y - index * NAME_LINE_GAP,
-      size: NAME_FONT_SIZE,
-      font,
-      color: NAME_COLOR,
-    });
+    const centered = index > 0;
+    context.textAlign = centered ? "center" : "start";
+    const x = centered
+      ? maxWidthPx / 2
+      : context.direction === "rtl" ? maxWidthPx : 0;
+    context.fillText(line, x, firstBaseline + index * lineGapPx);
+  });
+
+  const png = await new Promise((resolve, reject) => {
+    canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error("Name image generation failed")), "image/png");
+  });
+  return {
+    bytes: await png.arrayBuffer(),
+    heightPt: imageHeightPx / pointsToPixels,
+    baselineOffsetPt: (imageHeightPx - firstBaseline * imageScale) / imageScale / pointsToPixels,
+  };
+}
+
+async function createPdf(name) {
+  await getAssets();
+
+  const pdfDoc = await PDFDocument.create();
+  const page = pdfDoc.addPage([PAGE_W, PAGE_H]);
+
+  const bg = await pdfDoc.embedJpg(templateBytes);
+  page.drawImage(bg, { x: 0, y: 0, width: PAGE_W, height: PAGE_H });
+
+  const maxWidth = NAME_RIGHT - NAME_LEFT;
+  const nameImage = await renderNameImage(name, maxWidth);
+  const embeddedName = await pdfDoc.embedPng(nameImage.bytes);
+  page.drawImage(embeddedName, {
+    x: NAME_LEFT,
+    y: NAME_Y - nameImage.baselineOffsetPt,
+    width: maxWidth,
+    height: nameImage.heightPt,
   });
 
   return await pdfDoc.save();

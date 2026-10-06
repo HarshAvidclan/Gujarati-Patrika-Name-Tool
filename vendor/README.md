@@ -7,7 +7,6 @@ than fetched from a CDN at runtime.
 |---|---|---:|---|
 | `regenerator-runtime.min.js` | `regenerator-runtime` | 0.14.1 | MIT |
 | `pdf-lib.min.js` | `pdf-lib` | 1.17.1 | MIT |
-| `fontkit.min.js` | `@pdf-lib/fontkit` | 1.1.1 | MIT |
 | `pdf.min.js`, `pdf.worker.min.js` | `pdfjs-dist` | 3.11.174 | Apache-2.0 |
 
 License texts are in `licenses/`. The Gujarati font used by the application is

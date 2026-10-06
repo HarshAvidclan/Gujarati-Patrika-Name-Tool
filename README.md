@@ -4,14 +4,14 @@ A no-backend static web app for the supplied one-page Gujarati Patrika.
 
 ## Features
 
-- Enter Gujarati member name and generate a PDF.
+- Enter a member name in Gujarati or another language and generate a PDF. The entered script is rendered with browser-supported Unicode fonts.
 - Live PDF preview updates as the name is typed.
 - Generate button saves the member and downloads the PDF; previewing alone does neither.
 - LocalStorage saves generated member names and timestamps.
 - Table shows every saved member with a clickable name that shares its PDF, plus Share / Preview / Download / Link actions; the time and status columns are omitted.
 - "Share" uses the native Web Share API when supported, otherwise copies the share link.
 - "Link" copies a URL containing the member name so the recipient can open the same page with that name.
-- Names use a consistent 16 pt font and wrap into up to two lines; names too long for two lines are rejected with a message rather than shrunk.
+- Names use a consistent 16 pt font and wrap into up to two lines; names too long for two lines are rejected with a message rather than shrunk. The name is embedded as a high-resolution image in the PDF so it remains visible without requiring the recipient to install fonts.
 - Batch-style workflow via saved member table and "બધા Download".
 - Static-only: works on GitHub Pages without a server or runtime CDN requests.
 
@@ -21,9 +21,9 @@ The JavaScript libraries used to generate and preview PDFs are included in
 `vendor/`, so PDF generation and preview do not depend on a third-party CDN.
 Their exact versions and license notices are listed in `vendor/README.md`.
 
-## Important font note
+## Font and script support
 
-The supplied original PDF does **not** expose a reusable Gujarati font resource. Its Gujarati invitation text is flattened artwork; the PDF font resources only expose Lato for the separate embedded text layer. Because of that, the exact Gujarati design font cannot be extracted faithfully. This project therefore uses bundled `NotoSansGujarati-Bold.ttf` as a close, readable match.
+The supplied original PDF does **not** expose a reusable Gujarati font resource. Its Gujarati invitation text is flattened artwork; the PDF font resources only expose Lato for the separate embedded text layer. Gujarati uses the bundled `NotoSansGujarati-Bold.ttf` as a close, readable match. Other scripts use browser font fallback; the resulting name image is embedded in the PDF so the recipient does not need those fonts installed. Script and language coverage depends on fonts available in the browser/device used to generate the PDF.
 
 ## Run locally
 

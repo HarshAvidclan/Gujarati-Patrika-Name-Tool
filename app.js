@@ -13,7 +13,7 @@ const NAME_LEFT = 58;
 const NAME_RIGHT = 216;
 const NAME_Y = 360;
 const NAME_FONT_SIZE = 16;
-const NAME_LINE_GAP = 24;
+const NAME_LINE_GAP = 18;
 const NAME_MAX_LINES = 2;
 const NAME_TOO_LONG_MESSAGE = "નામ બે લાઇનમાં ફિટ થતું નથી. કૃપા કરીને ટૂંકું નામ દાખલ કરો.";
 

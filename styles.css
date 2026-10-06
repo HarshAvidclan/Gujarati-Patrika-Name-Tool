@@ -93,7 +93,7 @@ button:disabled { opacity:.55; cursor:not-allowed; transform:none; }
   background:linear-gradient(145deg,#f4e6ed,#f8eff4); border:1px solid #e8dce3;
   display:flex; justify-content:center; align-items:center;
 }
-#previewCanvas { display:block; max-width:100%; max-height:100%; background:#fff; }
+#previewCanvas { display:none; max-width:100%; max-height:100%; background:#fff; }
 .preview-empty {
   position:absolute; inset:0; display:grid; place-content:center; gap:10px; text-align:center;
   color:var(--muted); pointer-events:none; font-family:NotoGujarati,sans-serif;

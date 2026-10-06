@@ -5,7 +5,8 @@ A no-backend static web app for the supplied one-page Gujarati Patrika.
 ## Features
 
 - Enter Gujarati member name and generate a PDF.
-- Live PDF preview on the same page.
+- Live PDF preview updates as the name is typed.
+- Generate button saves the member and downloads the PDF; previewing alone does neither.
 - LocalStorage saves generated member names and timestamps.
 - Table shows every saved member with Preview / Download / Share / Link.
 - "Share" uses the native Web Share API when supported, otherwise copies the share link.

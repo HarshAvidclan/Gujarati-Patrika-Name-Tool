@@ -35,6 +35,9 @@ let members = loadMembers();
 let currentRecord = null;
 let fontBytes = null;
 let templateBytes = null;
+let previewRequestId = 0;
+let previewTimer = null;
+let previewRenderQueue = Promise.resolve();
 
 function loadMembers() {
   try {
@@ -183,6 +186,53 @@ async function renderPreview(bytes) {
   await page.render({ canvasContext: context, viewport }).promise;
 }
 
+function queuePreviewRender(bytes, requestId) {
+  const render = previewRenderQueue
+    .catch(() => {})
+    .then(async () => {
+      if (requestId !== previewRequestId) return false;
+      await renderPreview(bytes);
+      return requestId === previewRequestId;
+    });
+
+  previewRenderQueue = render;
+  return render;
+}
+
+async function updateLivePreview(requestId, name) {
+  try {
+    const bytes = await createPdf(name);
+    if (requestId !== previewRequestId) return;
+
+    if (await queuePreviewRender(bytes, requestId)) {
+      previewCanvas.style.display = "block";
+      emptyPreview.style.display = "none";
+      previewStatus.textContent = "Ready";
+    }
+  } catch (e) {
+    if (requestId !== previewRequestId) return;
+    console.error(e);
+    previewStatus.textContent = "Error";
+    showToast("Preview બનાવવામાં સમસ્યા આવી. ફરી પ્રયાસ કરો.");
+  }
+}
+
+function scheduleLivePreview() {
+  const requestId = ++previewRequestId;
+  const name = nameInput.value.trim();
+  clearTimeout(previewTimer);
+
+  if (!name) {
+    previewCanvas.style.display = "none";
+    emptyPreview.style.display = "grid";
+    previewStatus.textContent = "Ready";
+    return;
+  }
+
+  previewStatus.textContent = "Updating...";
+  previewTimer = setTimeout(() => updateLivePreview(requestId, name), 300);
+}
+
 async function generate(name, { save = true, download = true } = {}) {
   name = String(name || "").trim();
   if (!name) {
@@ -191,14 +241,18 @@ async function generate(name, { save = true, download = true } = {}) {
     return null;
   }
 
+  const requestId = ++previewRequestId;
+  clearTimeout(previewTimer);
   generateBtn.disabled = true;
   previewStatus.textContent = "Generating...";
 
   try {
     const bytes = await createPdf(name);
-    await renderPreview(bytes);
-    emptyPreview.style.display = "none";
-    previewStatus.textContent = "Ready";
+    if (await queuePreviewRender(bytes, requestId)) {
+      previewCanvas.style.display = "block";
+      emptyPreview.style.display = "none";
+      previewStatus.textContent = "Ready";
+    }
 
     const record = {
       id: crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`,
@@ -222,6 +276,7 @@ async function generate(name, { save = true, download = true } = {}) {
     showToast(`${name} માટે PDF તૈયાર છે.`);
     return bytes;
   } catch (e) {
+    if (requestId !== previewRequestId) return null;
     console.error(e);
     previewStatus.textContent = "Error";
     showToast("PDF બનાવવામાં સમસ્યા આવી. Internet/CSS assets તપાસો.");
@@ -334,6 +389,8 @@ function renderTable() {
 }
 
 generateBtn.addEventListener("click", () => generate(nameInput.value));
+
+nameInput.addEventListener("input", scheduleLivePreview);
 
 nameInput.addEventListener("keydown", e => {
   if (e.key === "Enter") generate(nameInput.value);

@@ -12,7 +12,13 @@ A no-backend static web app for the supplied one-page Gujarati Patrika.
 - "Link" copies a URL containing the member name so the recipient can open the same page with that name.
 - Long names automatically fit; if needed they wrap to a second line.
 - Batch-style workflow via saved member table and "બધા Download".
-- Static-only: works on GitHub Pages without a server.
+- Static-only: works on GitHub Pages without a server or runtime CDN requests.
+
+## Libraries and licenses
+
+The JavaScript libraries used to generate and preview PDFs are included in
+`vendor/`, so PDF generation and preview do not depend on a third-party CDN.
+Their exact versions and license notices are listed in `vendor/README.md`.
 
 ## Important font note
 

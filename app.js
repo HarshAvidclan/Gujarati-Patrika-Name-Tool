@@ -22,7 +22,6 @@ const NAME_COLOR = rgb(0.46, 0.08, 0.28);
 
 const nameInput = document.getElementById("nameInput");
 const generateBtn = document.getElementById("generateBtn");
-const copyLinkBtn = document.getElementById("copyLinkBtn");
 const previewCanvas = document.getElementById("previewCanvas");
 const previewWrap = document.querySelector(".preview-wrap");
 const previewStatus = document.getElementById("previewStatus");
@@ -398,8 +397,6 @@ nameInput.addEventListener("input", scheduleLivePreview);
 nameInput.addEventListener("keydown", e => {
   if (e.key === "Enter") generate(nameInput.value);
 });
-
-copyLinkBtn.addEventListener("click", () => copyLink(nameInput.value));
 
 clearAllBtn.addEventListener("click", () => {
   if (!members.length) return;

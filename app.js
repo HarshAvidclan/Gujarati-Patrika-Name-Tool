@@ -338,14 +338,6 @@ async function regenerateFor(name) {
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
-function formatDate(iso) {
-  const d = new Date(iso);
-  return new Intl.DateTimeFormat("en-IN", {
-    day: "2-digit", month: "2-digit", year: "numeric",
-    hour: "2-digit", minute: "2-digit"
-  }).format(d);
-}
-
 function renderTable() {
   membersBody.innerHTML = "";
   countBadge.textContent = String(members.length);
@@ -359,10 +351,13 @@ function renderTable() {
 
     const name = document.createElement("td");
     name.className = "name-cell";
-    name.textContent = member.name;
-
-    const date = document.createElement("td");
-    date.textContent = formatDate(member.createdAt);
+    const shareNameBtn = document.createElement("button");
+    shareNameBtn.type = "button";
+    shareNameBtn.className = "name-share-button";
+    shareNameBtn.textContent = member.name;
+    shareNameBtn.setAttribute("aria-label", `Share PDF for ${member.name}`);
+    shareNameBtn.onclick = () => sharePdf(member.name);
+    name.appendChild(shareNameBtn);
 
     const actions = document.createElement("td");
     actions.className = "row-actions";
@@ -391,7 +386,7 @@ function renderTable() {
     linkBtn.onclick = () => copyLink(member.name);
 
     actions.append(shareBtn, openBtn, downloadBtn, linkBtn);
-    tr.append(n, name, date, actions);
+    tr.append(n, name, actions);
     membersBody.appendChild(tr);
   });
 }

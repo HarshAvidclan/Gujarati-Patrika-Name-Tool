@@ -8,7 +8,7 @@ A no-backend static web app for the supplied one-page Gujarati Patrika.
 - Live PDF preview updates as the name is typed.
 - Generate button saves the member and downloads the PDF; previewing alone does neither.
 - LocalStorage saves generated member names and timestamps.
-- Table shows every saved member with Share / Preview / Download / Link actions and no redundant status column.
+- Table shows every saved member with a clickable name that shares its PDF, plus Share / Preview / Download / Link actions; the time and status columns are omitted.
 - "Share" uses the native Web Share API when supported, otherwise copies the share link.
 - "Link" copies a URL containing the member name so the recipient can open the same page with that name.
 - Names use a consistent 16 pt font and wrap into up to two lines; names too long for two lines are rejected with a message rather than shrunk.

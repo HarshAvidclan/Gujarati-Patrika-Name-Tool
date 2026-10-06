@@ -110,6 +110,11 @@ th, td { padding:14px 16px; border-top:1px solid var(--line); text-align:left; }
 th { font-size:12px; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); background:#fcf8fa; }
 td { vertical-align:middle; }
 .name-cell { font-family:NotoGujarati,sans-serif; font-size:17px; color:#5c1941; font-weight:800; }
+.name-share-button {
+  padding:0; border:0; border-radius:0; background:transparent;
+  color:inherit; font:inherit; text-align:left;
+}
+.name-share-button:hover { text-decoration:underline; }
 .row-actions { display:flex; gap:8px; flex-wrap:wrap; }
 .table-empty { padding:28px; text-align:center; color:var(--muted); font-family:NotoGujarati,sans-serif; }
 .toast {

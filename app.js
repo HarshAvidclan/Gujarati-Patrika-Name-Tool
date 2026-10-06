@@ -9,10 +9,13 @@ const PAGE_W = 414;
 const PAGE_H = 630;
 
 // Name area tuned to the supplied invitation: after "સ્નેહી,".
-const NAME_LEFT = 62;
-const NAME_RIGHT = 207;
+const NAME_LEFT = 58;
+const NAME_RIGHT = 216;
 const NAME_Y = 360;
-const SECOND_LINE_Y = 338;
+const NAME_FONT_SIZE = 16;
+const NAME_LINE_GAP = 24;
+const NAME_MAX_LINES = 2;
+const NAME_TOO_LONG_MESSAGE = "નામ બે લાઇનમાં ફિટ થતું નથી. કૃપા કરીને ટૂંકું નામ દાખલ કરો.";
 
 // Color taken from the invitation's dark reddish-purple text.
 const NAME_COLOR = rgb(0.46, 0.08, 0.28);
@@ -79,21 +82,37 @@ async function getAssets() {
   }
 }
 
-function fontSizeForWidth(font, text, maxWidth) {
-  let size = 18;
-  while (size >= 9) {
-    const width = font.widthOfTextAtSize(text, size);
-    if (width <= maxWidth) return size;
-    size -= 0.5;
-  }
-  return 9;
-}
-
 function wrapWords(font, text, maxWidth, size) {
   const words = text.trim().split(/\s+/);
   const lines = [];
   let line = "";
+
   for (const word of words) {
+    if (font.widthOfTextAtSize(word, size) > maxWidth) {
+      if (line) {
+        lines.push(line);
+        line = "";
+      }
+
+      const graphemes = typeof Intl.Segmenter === "function"
+        ? Array.from(new Intl.Segmenter("gu", { granularity: "grapheme" }).segment(word), x => x.segment)
+        : Array.from(word);
+      let fragment = "";
+
+      for (const grapheme of graphemes) {
+        const candidate = fragment + grapheme;
+        if (fragment && font.widthOfTextAtSize(candidate, size) > maxWidth) {
+          lines.push(fragment);
+          fragment = grapheme;
+        } else {
+          fragment = candidate;
+        }
+      }
+
+      line = fragment;
+      continue;
+    }
+
     const test = line ? `${line} ${word}` : word;
     if (font.widthOfTextAtSize(test, size) <= maxWidth) {
       line = test;
@@ -118,34 +137,24 @@ async function createPdf(name) {
 
   const font = await pdfDoc.embedFont(fontBytes, { subset: true });
   const maxWidth = NAME_RIGHT - NAME_LEFT;
+  const lines = wrapWords(font, name, maxWidth, NAME_FONT_SIZE);
 
-  // First try a single line. Long names are wrapped rather than overflowing.
-  let size = fontSizeForWidth(font, name, maxWidth);
-  const oneLineWidth = font.widthOfTextAtSize(name, size);
+  if (lines.length > NAME_MAX_LINES) {
+    const error = new Error(NAME_TOO_LONG_MESSAGE);
+    error.name = "NameTooLongError";
+    throw error;
+  }
 
-  if (oneLineWidth <= maxWidth) {
-    page.drawText(name, {
-      x: NAME_LEFT,
-      y: NAME_Y,
-      size,
+  lines.forEach((line, index) => {
+    const lineWidth = font.widthOfTextAtSize(line, NAME_FONT_SIZE);
+    page.drawText(line, {
+      x: index === 0 ? NAME_LEFT : NAME_LEFT + (maxWidth - lineWidth) / 2,
+      y: NAME_Y - index * NAME_LINE_GAP,
+      size: NAME_FONT_SIZE,
       font,
       color: NAME_COLOR,
     });
-  } else {
-    size = 11;
-    const lines = wrapWords(font, name, maxWidth, size);
-    let y = NAME_Y;
-    for (const line of lines.slice(0, 2)) {
-      page.drawText(line, {
-        x: NAME_LEFT,
-        y,
-        size,
-        font,
-        color: NAME_COLOR,
-      });
-      y = SECOND_LINE_Y;
-    }
-  }
+  });
 
   return await pdfDoc.save();
 }
@@ -212,8 +221,10 @@ async function updateLivePreview(requestId, name) {
   } catch (e) {
     if (requestId !== previewRequestId) return;
     console.error(e);
+    previewCanvas.style.display = "none";
+    emptyPreview.style.display = "grid";
     previewStatus.textContent = "Error";
-    showToast("Preview બનાવવામાં સમસ્યા આવી. ફરી પ્રયાસ કરો.");
+    showToast(e.name === "NameTooLongError" ? e.message : "Preview બનાવવામાં સમસ્યા આવી. ફરી પ્રયાસ કરો.");
   }
 }
 
@@ -279,7 +290,7 @@ async function generate(name, { save = true, download = true } = {}) {
     if (requestId !== previewRequestId) return null;
     console.error(e);
     previewStatus.textContent = "Error";
-    showToast("PDF બનાવવામાં સમસ્યા આવી. Internet/CSS assets તપાસો.");
+    showToast(e.name === "NameTooLongError" ? e.message : "PDF બનાવવામાં સમસ્યા આવી. ફરી પ્રયાસ કરો.");
     return null;
   } finally {
     generateBtn.disabled = false;

@@ -11,7 +11,7 @@ A no-backend static web app for the supplied one-page Gujarati Patrika.
 - Table shows every saved member with Preview / Download / Share / Link.
 - "Share" uses the native Web Share API when supported, otherwise copies the share link.
 - "Link" copies a URL containing the member name so the recipient can open the same page with that name.
-- Long names automatically fit; if needed they wrap to a second line.
+- Names use a consistent 16 pt font and wrap into up to two lines; names too long for two lines are rejected with a message rather than shrunk.
 - Batch-style workflow via saved member table and "બધા Download".
 - Static-only: works on GitHub Pages without a server or runtime CDN requests.
 

@@ -20,7 +20,8 @@ const NAME_COLOR = rgb(0.46, 0.08, 0.28);
 const nameInput = document.getElementById("nameInput");
 const generateBtn = document.getElementById("generateBtn");
 const copyLinkBtn = document.getElementById("copyLinkBtn");
-const previewFrame = document.getElementById("previewFrame");
+const previewCanvas = document.getElementById("previewCanvas");
+const previewWrap = document.querySelector(".preview-wrap");
 const previewStatus = document.getElementById("previewStatus");
 const emptyPreview = document.getElementById("emptyPreview");
 const membersBody = document.getElementById("membersBody");
@@ -162,6 +163,26 @@ function downloadBytes(bytes, name) {
   setTimeout(() => URL.revokeObjectURL(url), 1500);
 }
 
+async function renderPreview(bytes) {
+  const pdf = await pdfjsLib.getDocument({ data: bytes }).promise;
+  const page = await pdf.getPage(1);
+  const baseViewport = page.getViewport({ scale: 1 });
+  const scale = Math.min(
+    (previewWrap.clientWidth - 24) / baseViewport.width,
+    (previewWrap.clientHeight - 24) / baseViewport.height,
+  );
+  const pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
+  const viewport = page.getViewport({ scale: scale * pixelRatio });
+  const context = previewCanvas.getContext("2d");
+
+  previewCanvas.width = Math.ceil(viewport.width);
+  previewCanvas.height = Math.ceil(viewport.height);
+  previewCanvas.style.width = `${viewport.width / pixelRatio}px`;
+  previewCanvas.style.height = `${viewport.height / pixelRatio}px`;
+
+  await page.render({ canvasContext: context, viewport }).promise;
+}
+
 async function generate(name, { save = true, download = true } = {}) {
   name = String(name || "").trim();
   if (!name) {
@@ -175,8 +196,7 @@ async function generate(name, { save = true, download = true } = {}) {
 
   try {
     const bytes = await createPdf(name);
-    const url = blobUrl(bytes);
-    previewFrame.src = url;
+    await renderPreview(bytes);
     emptyPreview.style.display = "none";
     previewStatus.textContent = "Ready";
 

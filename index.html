@@ -64,7 +64,7 @@
         </div>
 
         <div class="preview-wrap">
-          <iframe id="previewFrame" title="Generated Patrika Preview"></iframe>
+          <canvas id="previewCanvas" aria-label="Generated Patrika preview"></canvas>
           <div id="emptyPreview" class="preview-empty">
             <div class="empty-icon">PDF</div>
             <div>અહીં generated Patrika દેખાશે</div>
@@ -109,6 +109,11 @@
   <script src="https://cdn.jsdelivr.net/npm/regenerator-runtime@0.14.1/runtime.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@pdf-lib/fontkit@1.1.1/dist/fontkit.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+  <script>
+    pdfjsLib.GlobalWorkerOptions.workerSrc =
+      "https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js";
+  </script>
   <script src="./app.js"></script>
 </body>
 </html>

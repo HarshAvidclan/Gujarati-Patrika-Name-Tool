@@ -186,7 +186,8 @@ function showDownloadError(error) {
 }
 
 async function renderPreview(bytes) {
-  const pdf = await pdfjsLib.getDocument({ data: bytes }).promise;
+  // PDF.js transfers typed arrays to its worker, so give it a copy to preserve download bytes.
+  const pdf = await pdfjsLib.getDocument({ data: bytes.slice() }).promise;
   const page = await pdf.getPage(1);
   const baseViewport = page.getViewport({ scale: 1 });
   const scale = Math.min(

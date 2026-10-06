@@ -171,10 +171,18 @@ function downloadBytes(bytes, name) {
   const a = document.createElement("a");
   a.href = url;
   a.download = name;
+  a.rel = "noopener";
   document.body.appendChild(a);
   a.click();
   a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 1500);
+  setTimeout(() => URL.revokeObjectURL(url), 60_000);
+}
+
+function showDownloadError(error) {
+  console.error(error);
+  showToast(error.name === "NameTooLongError"
+    ? error.message
+    : "PDF download કરવામાં સમસ્યા આવી. ફરી પ્રયાસ કરો.");
 }
 
 async function renderPreview(bytes) {
@@ -373,8 +381,15 @@ function renderTable() {
     downloadBtn.className = "secondary";
     downloadBtn.textContent = "Download";
     downloadBtn.onclick = async () => {
-      const bytes = await createPdf(member.name);
-      downloadBytes(bytes, `Patrika_${sanitizeFileName(member.name)}.pdf`);
+      downloadBtn.disabled = true;
+      try {
+        const bytes = await createPdf(member.name);
+        downloadBytes(bytes, `Patrika_${sanitizeFileName(member.name)}.pdf`);
+      } catch (error) {
+        showDownloadError(error);
+      } finally {
+        downloadBtn.disabled = false;
+      }
     };
 
     const shareBtn = document.createElement("button");
@@ -416,13 +431,18 @@ downloadAllBtn.addEventListener("click", async () => {
   }
 
   downloadAllBtn.disabled = true;
-  for (const member of members) {
-    const bytes = await createPdf(member.name);
-    downloadBytes(bytes, `Patrika_${sanitizeFileName(member.name)}.pdf`);
-    await new Promise(r => setTimeout(r, 250));
+  try {
+    for (const member of members) {
+      const bytes = await createPdf(member.name);
+      downloadBytes(bytes, `Patrika_${sanitizeFileName(member.name)}.pdf`);
+      await new Promise(r => setTimeout(r, 250));
+    }
+    showToast(`${members.length} PDF તૈયાર છે.`);
+  } catch (error) {
+    showDownloadError(error);
+  } finally {
+    downloadAllBtn.disabled = false;
   }
-  downloadAllBtn.disabled = false;
-  showToast(`${members.length} PDF તૈયાર છે.`);
 });
 
 (async function init() {

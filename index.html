@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="gu">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#8b1e5b" />
+  <meta name="description" content="Gujarati Patrika Name Generator" />
+  <title>Patrika Name Generator</title>
+  <link rel="preload" href="./assets/NotoSansGujarati-Bold.ttf" as="font" type="font/ttf" crossorigin />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-icon">પ</div>
+      <div>
+        <div class="brand-title">Patrika Name Generator</div>
+        <div class="brand-subtitle">ગુજરાતી નામથી તૈયાર PDF</div>
+      </div>
+    </div>
+    <button id="clearAllBtn" class="ghost danger">Clear All</button>
+  </header>
+
+  <main class="container">
+    <section class="hero-grid">
+      <div class="card form-card">
+        <div class="section-title-row">
+          <div>
+            <div class="eyebrow">NEW PATRIKA</div>
+            <h1>સભ્યનું ગુજરાતી નામ દાખલ કરો</h1>
+            <p class="muted">નામ દાખલ કરો, PDF બનાવો અને તરત share/download કરો.</p>
+          </div>
+          <div class="counter" id="countBadge">0</div>
+        </div>
+
+        <label for="nameInput">સભ્યનું નામ</label>
+        <input
+          id="nameInput"
+          type="text"
+          inputmode="text"
+          autocomplete="name"
+          spellcheck="false"
+          placeholder="ઉદાહરણ: હર્ષ પટેલ"
+          autofocus
+        />
+
+        <div class="actions">
+          <button id="generateBtn" class="primary">PDF બનાવો</button>
+          <button id="copyLinkBtn" class="secondary">Share Link Copy</button>
+        </div>
+
+        <div class="tip">
+          <strong>નોંધ:</strong> લાંબું નામ આપમેળે ઉપલબ્ધ પહોળાઈ પ્રમાણે ફિટ થશે. બહુ લાંબું નામ જરૂર પડે તો 2 લાઇનમાં ગોઠવાશે.
+        </div>
+      </div>
+
+      <div class="card preview-card">
+        <div class="preview-header">
+          <div>
+            <div class="eyebrow">LIVE PREVIEW</div>
+            <h2>મુખ્ય પેજ પર Preview</h2>
+          </div>
+          <span id="previewStatus" class="status-pill">Ready</span>
+        </div>
+
+        <div class="preview-wrap">
+          <iframe id="previewFrame" title="Generated Patrika Preview"></iframe>
+          <div id="emptyPreview" class="preview-empty">
+            <div class="empty-icon">PDF</div>
+            <div>અહીં generated Patrika દેખાશે</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card table-card">
+      <div class="table-head">
+        <div>
+          <div class="eyebrow">SAVED MEMBERS</div>
+          <h2>બનાવેલા PDF</h2>
+        </div>
+        <div class="table-actions">
+          <button id="downloadAllBtn" class="secondary">બધા Download</button>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>સભ્યનું નામ</th>
+              <th>સમય</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="membersBody"></tbody>
+        </table>
+        <div id="tableEmpty" class="table-empty">
+          હજુ કોઈ નામ બનાવાયું નથી.
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/regenerator-runtime@0.14.1/runtime.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@pdf-lib/fontkit@1.1.1/dist/fontkit.umd.min.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>

@@ -1,29 +1,71 @@
-# Gujarati Patrika Name Filler
+# Gujarati Patrika Name Generator
 
-A desktop app for adding Gujarati member names to the Patrika template and
-exporting print-ready PDFs. It supports generating one PDF or a batch of PDFs
-from a list of names.
+A no-backend static web app for the supplied one-page Gujarati Patrika.
 
-## Requirements
+## Features
 
-- Python 3
-- Pillow 10.0.0 or newer
+- Enter Gujarati member name and generate a PDF.
+- Live PDF preview on the same page.
+- LocalStorage saves generated member names and timestamps.
+- Table shows every saved member with Preview / Download / Share / Link.
+- "Share" uses the native Web Share API when supported, otherwise copies the share link.
+- "Link" copies a URL containing the member name so the recipient can open the same page with that name.
+- Long names automatically fit; if needed they wrap to a second line.
+- Batch-style workflow via saved member table and "બધા Download".
+- Static-only: works on GitHub Pages without a server.
 
-## Run
+## Important font note
 
-Install the dependency and start the app:
+The supplied original PDF does **not** expose a reusable Gujarati font resource. Its Gujarati invitation text is flattened artwork; the PDF font resources only expose Lato for the separate embedded text layer. Because of that, the exact Gujarati design font cannot be extracted faithfully. This project therefore uses bundled `NotoSansGujarati-Bold.ttf` as a close, readable match.
+
+## Run locally
+
+No Node.js is required.
+
+### Python local server
+
+Mac / Linux:
 
 ```bash
-python3 -m pip install -r requirements.txt
-python3 Gujarati_Patrika_Name_Filler.py
+python3 -m http.server 8080 --bind 0.0.0.0
 ```
 
-Enter a Gujarati name to generate one PDF, or enter one name per line to
-generate a batch. PDFs are saved to the `Generated` folder by default; the app
-also lets you choose another output folder.
+Windows:
 
-The included `Patrika_Clean_Template.png` and `NotoSansGujarati-Regular.ttf`
-are required by the app and should remain alongside the Python script.
+```bat
+python -m http.server 8080 --bind 0.0.0.0
+```
 
-This is a desktop Tkinter application. The repository hosts its source and
-required assets; it does not run as a web application.
+Open locally:
+
+`http://localhost:8080`
+
+From another device on the same Wi-Fi, use:
+
+`http://YOUR-PC-IP:8080`
+
+For example:
+
+`http://192.168.1.20:8080`
+
+## GitHub Pages
+
+The repo contains a GitHub Actions workflow under:
+
+`.github/workflows/deploy-pages.yml`
+
+After the repository is connected and the workflow runs on `main`, GitHub Pages can publish the static site. Project pages normally use:
+
+`https://YOUR-USERNAME.github.io/REPOSITORY/`
+
+## Updating the template
+
+Replace:
+
+`assets/patrika-template.jpg`
+
+with a new cleaned template of the same page artwork. Keep the same dimensions/aspect ratio so the existing placement remains aligned.
+
+## Privacy
+
+Member names are stored only in the browser's localStorage. No member list is sent to a server by this app. GitHub Pages itself is public hosting; the app's generated data is kept client-side.

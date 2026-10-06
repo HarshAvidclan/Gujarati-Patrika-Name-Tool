@@ -4,10 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#8b1e5b" />
-  <meta name="description" content="Multilingual Patrika Name Generator" />
+  <meta name="description" content="Gujarati Patrika Name Generator" />
   <title>Patrika Name Generator</title>
   <link rel="preload" href="./assets/NotoSansGujarati-Bold.ttf" as="font" type="font/ttf" crossorigin />
-  <link rel="stylesheet" href="./styles.css?v=multilingual-name-rendering" />
+  <link rel="stylesheet" href="./styles.css?v=live-preview-canvas" />
 </head>
 <body>
   <header class="topbar">
@@ -15,7 +15,7 @@
       <div class="brand-icon">પ</div>
       <div>
         <div class="brand-title">Patrika Name Generator</div>
-        <div class="brand-subtitle">નામ પરથી તૈયાર PDF</div>
+        <div class="brand-subtitle">ગુજરાતી નામથી તૈયાર PDF</div>
       </div>
     </div>
     <button id="clearAllBtn" class="ghost danger">Clear All</button>
@@ -27,7 +27,7 @@
         <div class="section-title-row">
           <div>
             <div class="eyebrow">NEW PATRIKA</div>
-            <h1>સભ્યનું નામ દાખલ કરો</h1>
+            <h1>સભ્યનું ગુજરાતી નામ દાખલ કરો</h1>
             <p class="muted">નામ લખતાં જ live preview જુઓ. PDF બનાવવા Generate બટન દબાવો.</p>
           </div>
           <div class="counter" id="countBadge">0</div>
@@ -101,11 +101,12 @@
 
   <script src="./vendor/regenerator-runtime.min.js"></script>
   <script src="./vendor/pdf-lib.min.js"></script>
+  <script src="./vendor/fontkit.min.js"></script>
   <script src="./vendor/pdf.min.js"></script>
   <script>
     pdfjsLib.GlobalWorkerOptions.workerSrc =
       "./vendor/pdf.worker.min.js";
   </script>
-  <script src="./app.js?v=multilingual-name-rendering"></script>
+  <script src="./app.js?v=clean-input-form"></script>
 </body>
 </html>

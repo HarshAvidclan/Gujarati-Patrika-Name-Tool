@@ -327,20 +327,53 @@ async function copyLink(name) {
 }
 
 async function sharePdf(name) {
-  const bytes = await createPdf(name);
-  const file = new File([bytes], `Patrika_${sanitizeFileName(name)}.pdf`, { type: "application/pdf" });
+  try {
+    const safeName = sanitizeFileName(name);
+    const bytes = await createPdf(name);
+    const files = [
+      new File([bytes], `Patrika_${safeName}.pdf`, { type: "application/pdf" }),
+    ];
+    const image = await createPdfPageImage(bytes);
+    files.push(new File([image], `Patrika_${safeName}.png`, { type: "image/png" }));
 
-  if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-    await navigator.share({
-      title: `Patrika - ${name}`,
-      text: `Patrika for ${name}`,
-      files: [file],
-    });
-    return;
+    if (navigator.share && navigator.canShare && navigator.canShare({ files })) {
+      await navigator.share({
+        title: `Patrika - ${name}`,
+        text: `Patrika for ${name}`,
+        files,
+      });
+      return;
+    }
+
+    files.forEach(file => downloadBytes(file, file.name));
+    showToast("આ browser માં direct file share ઉપલબ્ધ નથી. Download કરેલી file(s) WhatsApp માં attach કરો.");
+  } catch (error) {
+    if (error.name === "AbortError") return;
+    console.error(error);
+    showToast(error.name === "NameTooLongError"
+      ? error.message
+      : "PDF share કરવામાં સમસ્યા આવી. ફરી પ્રયાસ કરો.");
   }
+}
 
-  await copyLink(name);
-  showToast("આ device પર direct file share ઉપલબ્ધ નથી. Share link copy થઈ ગઈ.");
+async function createPdfPageImage(bytes) {
+  const pdf = await pdfjsLib.getDocument({ data: bytes.slice() }).promise;
+  try {
+    const page = await pdf.getPage(1);
+    const viewport = page.getViewport({ scale: 1.5 });
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.ceil(viewport.width);
+    canvas.height = Math.ceil(viewport.height);
+    await page.render({ canvasContext: canvas.getContext("2d"), viewport }).promise;
+    return await new Promise((resolve, reject) => {
+      canvas.toBlob(image => {
+        if (image) resolve(image);
+        else reject(new Error("Could not create PNG image"));
+      }, "image/png");
+    });
+  } finally {
+    await pdf.destroy();
+  }
 }
 
 async function regenerateFor(name) {

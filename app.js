@@ -330,49 +330,21 @@ async function sharePdf(name) {
   try {
     const safeName = sanitizeFileName(name);
     const bytes = await createPdf(name);
-    const files = [
-      new File([bytes], `Patrika_${safeName}.pdf`, { type: "application/pdf" }),
-    ];
-    const image = await createPdfPageImage(bytes);
-    files.push(new File([image], `Patrika_${safeName}.png`, { type: "image/png" }));
+    const file = new File([bytes], `Patrika_${safeName}.pdf`, { type: "application/pdf" });
 
-    if (navigator.share && navigator.canShare && navigator.canShare({ files })) {
-      await navigator.share({
-        title: `Patrika - ${name}`,
-        text: `Patrika for ${name}`,
-        files,
-      });
+    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({ files: [file] });
       return;
     }
 
-    files.forEach(file => downloadBytes(file, file.name));
-    showToast("આ browser માં direct file share ઉપલબ્ધ નથી. Download કરેલી file(s) WhatsApp માં attach કરો.");
+    downloadBytes(file, file.name);
+    showToast("આ browser માં direct file share ઉપલબ્ધ નથી. Download થયેલ PDF WhatsApp માં attach કરો.");
   } catch (error) {
     if (error.name === "AbortError") return;
     console.error(error);
     showToast(error.name === "NameTooLongError"
       ? error.message
       : "PDF share કરવામાં સમસ્યા આવી. ફરી પ્રયાસ કરો.");
-  }
-}
-
-async function createPdfPageImage(bytes) {
-  const pdf = await pdfjsLib.getDocument({ data: bytes.slice() }).promise;
-  try {
-    const page = await pdf.getPage(1);
-    const viewport = page.getViewport({ scale: 1.5 });
-    const canvas = document.createElement("canvas");
-    canvas.width = Math.ceil(viewport.width);
-    canvas.height = Math.ceil(viewport.height);
-    await page.render({ canvasContext: canvas.getContext("2d"), viewport }).promise;
-    return await new Promise((resolve, reject) => {
-      canvas.toBlob(image => {
-        if (image) resolve(image);
-        else reject(new Error("Could not create PNG image"));
-      }, "image/png");
-    });
-  } finally {
-    await pdf.destroy();
   }
 }
 

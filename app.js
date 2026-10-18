@@ -330,10 +330,11 @@ async function sharePdf(name) {
   try {
     const safeName = sanitizeFileName(name);
     const bytes = await createPdf(name);
-    const pdfFile = new File([bytes], `Patrika_${safeName}.pdf`, { type: "application/pdf" });
     const imageBlob = await createFirstPageImage(bytes);
     const imageFile = new File([imageBlob], `Patrika_${safeName}.jpg`, { type: "image/jpeg" });
-    const files = [pdfFile, imageFile];
+    const pdfFile = new File([bytes], `Patrika_${safeName}.pdf`, { type: "application/pdf" });
+    // Place the image first so messaging apps that preview the first image show the page visually.
+    const files = [imageFile, pdfFile];
 
     if (navigator.share && navigator.canShare && navigator.canShare({ files })) {
       await navigator.share({ files });

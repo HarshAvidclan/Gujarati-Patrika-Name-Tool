@@ -9,13 +9,13 @@ A no-backend static web app for the supplied one-page Gujarati Patrika.
 - Generate button saves the member and downloads the PDF; previewing alone does neither.
 - LocalStorage saves generated member names and timestamps.
 - Table shows every saved member with a clickable name that shares its PDF, plus Share / Preview / Download / Link actions; the time and status columns are omitted.
-- "Share" sends the generated PDF together with a JPEG of its first page using the native Web Share API when supported. The image gives WhatsApp a visible image attachment alongside the openable PDF. Browsers without file sharing support download both for manual attachment.
+- "Share" sends only the generated PDF using the native Web Share API when supported. Browsers without file sharing support download the PDF for manual attachment.
 - "Link" copies a URL containing the member name so the recipient can open the same page with that name.
 - Names use a 16 pt font and wrap into up to two lines; Gujarati names use the bundled Gujarati font and English names use PDF's built-in Helvetica Bold font. Names too long for two lines are rejected with a message rather than shrunk.
 - Batch-style workflow via saved member table and "બધા Download".
 - Static-only: works on GitHub Pages without a server or runtime CDN requests.
 
-WhatsApp controls its own PDF thumbnail/preview and may not render a PDF preview in chat. Sharing a first-page JPEG alongside the PDF provides a visible image in the chat, while the PDF remains available to open. Direct file sharing generally requires a supported browser over HTTPS or localhost; otherwise download both files and attach them manually.
+WhatsApp controls its own PDF thumbnail/preview and may not render a PDF preview in chat. The recipient can still open the PDF to view its first page. Direct file sharing generally requires a supported browser over HTTPS or localhost; otherwise download the PDF and attach it manually.
 
 ## Libraries and licenses
 

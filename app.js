@@ -330,21 +330,45 @@ async function sharePdf(name) {
   try {
     const safeName = sanitizeFileName(name);
     const bytes = await createPdf(name);
-    const file = new File([bytes], `Patrika_${safeName}.pdf`, { type: "application/pdf" });
+    const pdfFile = new File([bytes], `Patrika_${safeName}.pdf`, { type: "application/pdf" });
+    const imageBlob = await createFirstPageImage(bytes);
+    const imageFile = new File([imageBlob], `Patrika_${safeName}.jpg`, { type: "image/jpeg" });
+    const files = [pdfFile, imageFile];
 
-    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-      await navigator.share({ files: [file] });
+    if (navigator.share && navigator.canShare && navigator.canShare({ files })) {
+      await navigator.share({ files });
       return;
     }
 
-    downloadBytes(file, file.name);
-    showToast("આ browser માં direct file share ઉપલબ્ધ નથી. Download થયેલ PDF WhatsApp માં attach કરો.");
+    files.forEach(file => downloadBytes(file, file.name));
+    showToast("આ browser માં direct file share ઉપલબ્ધ નથી. PDF અને image બંને WhatsApp માં attach કરો.");
   } catch (error) {
     if (error.name === "AbortError") return;
     console.error(error);
     showToast(error.name === "NameTooLongError"
       ? error.message
       : "PDF share કરવામાં સમસ્યા આવી. ફરી પ્રયાસ કરો.");
+  }
+}
+
+async function createFirstPageImage(bytes) {
+  const pdf = await pdfjsLib.getDocument({ data: bytes.slice() }).promise;
+  try {
+    const page = await pdf.getPage(1);
+    const viewport = page.getViewport({ scale: 1.5 });
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.ceil(viewport.width);
+    canvas.height = Math.ceil(viewport.height);
+    await page.render({ canvasContext: canvas.getContext("2d"), viewport }).promise;
+
+    return await new Promise((resolve, reject) => {
+      canvas.toBlob(image => {
+        if (image) resolve(image);
+        else reject(new Error("Could not create first-page image"));
+      }, "image/jpeg", 0.92);
+    });
+  } finally {
+    await pdf.destroy();
   }
 }
 
